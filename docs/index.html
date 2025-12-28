@@ -31,8 +31,8 @@
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
       color:var(--text);
       background:
-        radial-gradient(900px 520px at 10% -10%, rgba(255,90,42,.22), transparent 60%),
-        radial-gradient(900px 520px at 110% 0%, rgba(255,176,0,.14), transparent 55%),
+        radial-gradient(900px 520px at 10% -30%, rgba(255,90,42,.22), transparent 60%),
+        radial-gradient(900px 520px at 110% -20%, rgba(255,176,0,.14), transparent 55%),
         linear-gradient(180deg, var(--bg1), var(--bg0));
     }
     a{ color:inherit; text-decoration:none; }
@@ -182,19 +182,18 @@
       </div>
       <div class="navlinks">
         <a class="pill primary" href="https://github.com/magma-trading/magma-sdk">GitHub Repo</a>
-        <a class="pill" href="./README.html">README (HTML)</a>
-        <a class="pill" href="./SECURITY.html">Security</a>
-        <a class="pill" href="./LICENSE.html">License</a>
+        <a class="pill" target="_blank" href="https://raw.githubusercontent.com/magma-trading/magma-sdk/refs/heads/main/SECURITY.md">Security</a>
+        <a class="pill" target="_blank" href="https://raw.githubusercontent.com/magma-trading/magma-sdk/refs/heads/main/LICENSE">License</a>
       </div>
     </div>
 
     <div class="hero">
-      <div class="kicker"><span class="dot"></span> Transparent by design · published for audit</div>
+      <div class="kicker"><span class="dot"></span> Transparency & security by design · published for security audit and transparency</div>
       <h1>Local Magma Trading SDK</h1>
       <div class="sub">
         <b>Important:</b> this software is <b>experimental</b> and <b>not production-ready</b>.
-        It is published publicly <b>only for transparency and security audit</b>.
-        Do not rely on it to protect funds, credentials, or sensitive data in real trading environments.
+        </br>It is published publicly <b>only for transparency and security audit</b>.
+        </br>Do not rely on it to protect funds, credentials, or sensitive data in real trading environments.
       </div>
 
       <div class="badges">
@@ -259,16 +258,23 @@ cd magma-sdk
 
 # build
 go build -o ./bin/traderd ./cmd/traderd
-go build -o ./bin/ui     ./cmd/ui
+go build -o ./bin/ui ./cmd/ui
 
-# run daemon (example flags may differ by your cmd/traderd)
+# or just build with
+./compile.sh
+
+# Terminal 1. run daemon (example flags may differ by your cmd/traderd)
 ./bin/traderd -sock /tmp/traderd.sock -db ./traderd.db -allowlist-file ./allowlist.txt
 
-# run UI
+# Terminal 2. run UI
 ./bin/ui -addr localhost:8020 -traderd-sock /tmp/traderd.sock
 
-# open
-# http://localhost:8020/</code></pre>
+# Browser: open
+# http://localhost:8020/
+
+# or just run
+./run-sdk.sh
+</code></pre>
         </div>
       </div>
 
@@ -278,6 +284,7 @@ go build -o ./bin/ui     ./cmd/ui
           <div class="tag">Docs</div>
         </div>
         <div class="body">
+<!--
           <p>
             This site is served from the <span class="mono">docs/</span> folder via GitHub Pages.
             Links:
@@ -290,6 +297,7 @@ go build -o ./bin/ui     ./cmd/ui
           <p class="muted2">
             Tip: keep these generated files committed so Pages works with “Deploy from branch”.
           </p>
+-->
         </div>
       </div>
     </div>
