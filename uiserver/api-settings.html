@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Exchange API Setup</title>
+  <style>
+    :root{
+      --bg: #000000;
+      --panel: #0b0f14;
+      --panel2:#0f1620;
+      --line: rgba(255,255,255,0.10);
+      --text:#ffffff;
+      --muted: rgba(255,255,255,0.70);
+      --muted2: rgba(255,255,255,0.50);
+      --ok: #25c26e;
+      --warn: #ffcc00;
+      --danger: #ff4d4d;
+      --ring: rgba(255,255,255,0.18);
+      --shadow: rgba(0,0,0,0.55);
+    }
+
+    *{ box-sizing:border-box; }
+    html, body{ height:100%; }
+    body{
+      margin:0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .container{
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 22px;
+    }
+
+    .topbar{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      padding: 18px 0 14px 0;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 18px;
+    }
+    .title{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    .title h1{
+      margin:0;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+    .title .sub{
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .status{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size: 12px;
+      color: var(--muted);
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+      border-radius: 12px;
+    }
+    .dot{
+      width:10px; height:10px; border-radius:999px;
+      background: var(--danger);
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.06);
+    }
+    .dot.ok{ background: var(--ok); }
+
+    .toolbar{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom: 14px;
+    }
+    .search{
+      width: 360px;
+      max-width: 100%;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      color: var(--text);
+      outline: none;
+    }
+    .search:focus{
+      border-color: rgba(255,255,255,0.22);
+      box-shadow: 0 0 0 4px rgba(255,255,255,0.06);
+    }
+    .hint{
+      font-size: 12px;
+      color: var(--muted2);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+    @media (max-width: 980px){
+      .grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
+    @media (max-width: 640px){
+      .grid{ grid-template-columns: 1fr; }
+      .toolbar{ flex-direction: column; align-items: stretch; }
+      .search{ width: 100%; }
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow:hidden;
+      box-shadow: 0 10px 28px var(--shadow);
+    }
+    .card-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding: 14px 14px 10px 14px;
+      background: rgba(255,255,255,0.02);
+      border-bottom: 1px solid var(--line);
+    }
+    .ex-name{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      min-width:0;
+    }
+    .ex-name .name{
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: 0.3px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .ex-name .meta{
+      font-size: 12px;
+      color: var(--muted2);
+    }
+
+    .btn{
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      padding: 8px 10px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      user-select:none;
+    }
+    .btn:hover{ border-color: rgba(255,255,255,0.22); }
+    .btn:disabled{ opacity: 0.5; cursor: not-allowed; }
+    .btn.primary{
+      border-color: rgba(37,194,110,0.45);
+      background: rgba(37,194,110,0.12);
+    }
+
+    .card-body{
+      padding: 12px 14px 14px 14px;
+    }
+
+    .kv{
+      display:grid;
+      grid-template-columns: 120px 1fr;
+      gap: 8px 10px;
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+    .k{ color: var(--muted2); }
+    .v{
+      color: var(--text);
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .v.muted{ color: var(--muted); }
+
+    .edit{
+      display:none;
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
+      margin-top: 12px;
+    }
+    .card.editing .edit{ display:block; }
+
+    .form{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    label{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    input[type="text"], input[type="password"]{
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      color: var(--text);
+      outline:none;
+    }
+    input[type="text"]:focus, input[type="password"]:focus{
+      border-color: rgba(255,255,255,0.22);
+      box-shadow: 0 0 0 4px rgba(255,255,255,0.06);
+    }
+
+    .row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-top: 10px;
+    }
+    .toggle{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: rgba(15,22,32,0.92);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-size: 12px;
+      box-shadow: 0 10px 28px var(--shadow);
+      display:none;
+      max-width: 92vw;
+    }
+    .toast.show{ display:block; }
+
+/* ---- Bigger, more readable typography patch ---- */
+body{
+  font-size: 16px;                 /* base */
+}
+
+.title h1{
+  font-size: 22px;                 /* was 18px */
+}
+
+.title .sub{
+  font-size: 14px;                 /* was 13px */
+}
+
+.status{
+  font-size: 14px;                 /* was 12px */
+  padding: 10px 12px;
+}
+
+.search{
+  font-size: 16px;
+  padding: 12px 14px;
+}
+
+.hint{
+  font-size: 14px;                 /* was 12px */
+}
+
+.ex-name .name{
+  font-size: 16px;                 /* was 14px */
+}
+
+.ex-name .meta{
+  font-size: 13px;                 /* was 12px */
+}
+
+.kv{
+  font-size: 14px;                 /* was 12px */
+  grid-template-columns: 140px 1fr; /* give labels more room */
+  gap: 10px 12px;
+}
+
+.btn{
+  font-size: 14px;                 /* was 12px */
+  padding: 10px 12px;
+}
+
+label{
+  font-size: 14px;                 /* was 12px */
+}
+
+input[type="text"], input[type="password"]{
+  font-size: 16px;
+  padding: 12px 14px;
+}
+
+.toggle{
+  font-size: 14px;                 /* was 12px */
+}
+
+.toast{
+  font-size: 14px;                 /* was 12px */
+  padding: 12px 14px;
+}
+/* ---------------------------------------------- */
+
+/* ---- Softer dark theme (black + dark gray) ---- */
+:root{
+  --bg: #0b0d10;              /* not pure black */
+  --panel: #11151b;           /* card base */
+  --panel2:#151b23;           /* header / accents */
+  --line: rgba(255,255,255,0.12);
+  --text:#f2f4f7;
+  --muted: rgba(242,244,247,0.72);
+  --muted2: rgba(242,244,247,0.55);
+  --shadow: rgba(0,0,0,0.45);
+}
+
+body{
+  background:
+    radial-gradient(1200px 700px at 10% -10%, rgba(255,255,255,0.06), transparent 60%),
+    radial-gradient(900px 600px at 100% 0%, rgba(255,255,255,0.04), transparent 55%),
+    linear-gradient(180deg, #0b0d10 0%, #0a0c0f 100%);
+  color: var(--text);
+}
+
+/* cards and blocks slightly brighter */
+.card{
+  background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+  border-color: var(--line);
+  box-shadow: 0 10px 26px var(--shadow);
+}
+
+.card-head{
+  background: rgba(255,255,255,0.03);
+}
+
+.status{
+  background: rgba(255,255,255,0.04);
+}
+
+.search,
+input[type="text"], input[type="password"]{
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(255,255,255,0.14);
+}
+
+.btn{
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(255,255,255,0.14);
+}
+
+.btn.primary{
+  background: rgba(37,194,110,0.16);
+  border-color: rgba(37,194,110,0.55);
+}
+/* ---------------------------------------------- */
+
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="title">
+        <h1>Exchange API Setup</h1>
+        <div class="sub">Local-only UI · saves to BoltDB via WebSocket</div>
+      </div>
+      <div class="status" id="status">
+        <span class="dot" id="dot"></span>
+        <span id="statusText">Disconnected</span>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <input id="search" class="search" type="text" placeholder="Filter exchanges… (e.g. binance, kraken)" />
+      <div class="hint">Secrets are stored locally in the DB. Consider encrypting at rest for production.</div>
+    </div>
+
+    <div id="grid" class="grid"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  const EXCHANGES = [
+    "Binance","Coinbase","Upbit","OKX","Bybit","Bitget","Gate","KuCoin","MEXC","HTX","Crypto.com",
+    "Bitfinex","BingX","Kraken","BitMart","LBank","Bitstamp","Bithumb"
+  ];
+
+  const grid = document.getElementById("grid");
+  const search = document.getElementById("search");
+  const statusText = document.getElementById("statusText");
+  const dot = document.getElementById("dot");
+  const toast = document.getElementById("toast");
+
+  let ws = null;
+  let connected = false;
+  let state = {}; // exchange -> config
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 2500);
+  }
+
+  function setStatus(ok) {
+    connected = ok;
+    statusText.textContent = ok ? "Connected" : "Disconnected (retrying…)";
+    dot.classList.toggle("ok", ok);
+    renderAll();
+  }
+
+  function wsSend(obj) {
+    if (!ws || ws.readyState !== WebSocket.OPEN) return false;
+    ws.send(JSON.stringify(obj));
+    return true;
+  }
+
+  function connectWS() {
+    if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
+
+    const proto = location.protocol === "https:" ? "wss" : "ws";
+    ws = new WebSocket(`${proto}://${location.host}/ws`);
+
+    ws.onopen = () => {
+      setStatus(true);
+      wsSend({ type: "list" });
+    };
+
+    ws.onmessage = (ev) => {
+      let msg;
+      try { msg = JSON.parse(ev.data); } catch { return; }
+
+      if (msg.type === "list") {
+        state = msg.data || {};
+        renderAll();
+      } else if (msg.type === "saved") {
+        state[msg.exchange] = msg.config || {};
+        showToast(`Saved: ${msg.exchange}`);
+        renderAll();
+      } else if (msg.type === "error") {
+        showToast(`Error: ${msg.error || "unknown"}`);
+      }
+    };
+
+    ws.onclose = () => {
+      setStatus(false);
+      setTimeout(connectWS, 2000);
+    };
+
+    ws.onerror = () => {
+      try { ws.close(); } catch {}
+    };
+  }
+
+  function mask(s) {
+    if (!s) return "—";
+    if (s.length <= 6) return "••••••";
+    return s.slice(0, 2) + "••••••" + s.slice(-2);
+  }
+
+  function cfgOrEmpty(exchange) {
+    const c = state[exchange] || {};
+    return {
+      apiKey: c.apiKey || "",
+      apiSecret: c.apiSecret || "",
+      passphrase: c.passphrase || "",
+      label: c.label || "",
+      testnet: !!c.testnet,
+      updatedAtUtc: c.updatedAtUtc || ""
+    };
+  }
+
+  function renderCard(exchange) {
+    const cfg = cfgOrEmpty(exchange);
+
+    const card = document.createElement("div");
+    card.className = "card";
+    card.dataset.exchange = exchange;
+
+    const updatedLabel = cfg.updatedAtUtc ? `Updated ${cfg.updatedAtUtc}` : "Not configured";
+
+    card.innerHTML = `
+      <div class="card-head">
+        <div class="ex-name">
+          <div class="name">${escapeHtml(exchange)}</div>
+          <div class="meta">${escapeHtml(updatedLabel)}</div>
+        </div>
+        <button class="btn" data-action="toggle">Edit</button>
+      </div>
+
+      <div class="card-body">
+        <div class="kv">
+          <div class="k">API Key</div>        <div class="v">${escapeHtml(mask(cfg.apiKey))}</div>
+          <div class="k">API Secret</div>     <div class="v">${escapeHtml(mask(cfg.apiSecret))}</div>
+          <div class="k">Passphrase</div>     <div class="v">${escapeHtml(mask(cfg.passphrase))}</div>
+          <div class="k">Label</div>          <div class="v ${cfg.label ? "" : "muted"}">${escapeHtml(cfg.label || "—")}</div>
+          <div class="k">Testnet</div>        <div class="v ${cfg.testnet ? "" : "muted"}">${cfg.testnet ? "Enabled" : "Disabled"}</div>
+        </div>
+
+        <div class="edit">
+          <div class="form">
+            <label>API Key
+              <input type="text" data-field="apiKey" value="${escapeAttr(cfg.apiKey)}" autocomplete="off" />
+            </label>
+            <label>API Secret
+              <input type="password" data-field="apiSecret" value="${escapeAttr(cfg.apiSecret)}" autocomplete="off" />
+            </label>
+            <label>Passphrase (optional)
+              <input type="password" data-field="passphrase" value="${escapeAttr(cfg.passphrase)}" autocomplete="off" />
+            </label>
+            <label>Label (optional)
+              <input type="text" data-field="label" value="${escapeAttr(cfg.label)}" autocomplete="off" />
+            </label>
+
+            <div class="row">
+              <div class="toggle">
+                <input type="checkbox" data-field="testnet" ${cfg.testnet ? "checked" : ""}/>
+                <span>Use Testnet</span>
+              </div>
+              <button class="btn primary" data-action="save" ${connected ? "" : "disabled"}>Save</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    card.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-action]");
+      if (!btn) return;
+
+      const action = btn.getAttribute("data-action");
+      if (action === "toggle") {
+        card.classList.toggle("editing");
+      } else if (action === "save") {
+        const payload = readCardConfig(card);
+        if (!wsSend({ type: "save", exchange, config: payload })) {
+          showToast("WebSocket not connected");
+        }
+      }
+    });
+
+    return card;
+  }
+
+  function readCardConfig(card) {
+    const get = (field) => card.querySelector(`[data-field="${field}"]`);
+    return {
+      apiKey: (get("apiKey")?.value || "").trim(),
+      apiSecret: (get("apiSecret")?.value || "").trim(),
+      passphrase: (get("passphrase")?.value || "").trim(),
+      label: (get("label")?.value || "").trim(),
+      testnet: !!get("testnet")?.checked
+    };
+  }
+
+  function renderAll() {
+    const q = (search.value || "").trim().toLowerCase();
+    grid.innerHTML = "";
+    EXCHANGES
+      .filter(x => !q || x.toLowerCase().includes(q))
+      .forEach(ex => grid.appendChild(renderCard(ex)));
+  }
+
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+  function escapeAttr(s){ return escapeHtml(s).replace(/"/g, '&quot;'); }
+
+  search.addEventListener("input", renderAll);
+
+  renderAll();
+  connectWS();
+})();
+</script>
+</body>
+</html>

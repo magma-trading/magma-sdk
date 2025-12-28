@@ -1,0 +1,5 @@
+# main exchange endpoints
+api.binance.com
+.binance.com
+api.kraken.com
+.kraken.com

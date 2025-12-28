@@ -1,0 +1,15 @@
+# binaries
+*.exe
+*.out
+
+# logs
+*.log
+
+# bolt db files (local secrets)
+traderd.db
+traderd.db_*
+
+# editor/OS
+.DS_Store
+.idea/
+.vscode/
